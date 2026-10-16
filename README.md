@@ -86,6 +86,8 @@ pip install mediapipe opencv-python fastapi uvicorn
 - [x] Integración DroidCam
 - [x] Captura de vídeo desde OpenCV
 - [x] Integración MediaPipe Pose
+- [x] Obtención de landmarks corporales
+- [x] Visualización de landmarks en tiempo real
 - [ ] Detección de caídas
 - [ ] Backend FastAPI
 - [ ] Base de datos SQLite
@@ -179,10 +181,9 @@ La siguiente fase consistirá en visualizar gráficamente dichos landmarks sobre
 
 ## Próximos pasos
 
-1. Obtener landmarks corporales con MediaPipe Pose.
-2. Dibujar el esqueleto sobre la imagen.
-3. Diseñar la lógica de detección de caídas.
-4. Enviar eventos al backend mediante FastAPI.
-5. Almacenar eventos en SQLite.
-6. Desarrollar interfaz para consulta de eventos.
-7. Evaluar sensibilidad y falsos positivos.
+1. Analizar landmarks relevantes para detectar caídas.
+2. Diseñar la lógica de detección de caídas.
+3. Enviar eventos al backend mediante FastAPI.
+4. Almacenar eventos en SQLite.
+5. Desarrollar interfaz para consulta de eventos.
+6. Evaluar sensibilidad y falsos positivos.
