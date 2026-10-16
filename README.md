@@ -85,7 +85,7 @@ pip install mediapipe opencv-python fastapi uvicorn
 - [x] Instalación de MediaPipe
 - [x] Integración DroidCam
 - [x] Captura de vídeo desde OpenCV
-- [ ] Integración MediaPipe Pose
+- [x] Integración MediaPipe Pose
 - [ ] Detección de caídas
 - [ ] Backend FastAPI
 - [ ] Base de datos SQLite
@@ -138,6 +138,44 @@ Procesamiento en tiempo real
 OpenCV recibe correctamente el vídeo en tiempo real y puede utilizarlo posteriormente como entrada para MediaPipe.
 
 ---
+
+### Integración de MediaPipe Pose
+
+La versión instalada de MediaPipe utiliza la API moderna basada en Tasks y no la API clásica basada en:
+
+```python
+mp.solutions.pose
+```
+
+Para la detección de poses se utiliza:
+
+```python
+mp.tasks.vision.PoseLandmarker
+```
+
+Se ha descargado el modelo oficial:
+
+```text
+detector/models/pose_landmarker_full.task
+```
+
+y se ha validado correctamente su carga mediante:
+
+```python
+PoseLandmarker.create_from_options(...)
+```
+
+La detección devuelve correctamente un objeto:
+
+```text
+PoseLandmarkerResult
+```
+
+que contiene los landmarks corporales detectados sobre la persona.
+
+Actualmente se ha verificado la detección de una persona mediante una imagen capturada en tiempo real desde DroidCam, obteniendo correctamente los 33 landmarks corporales proporcionados por PoseLandmarker.
+
+La siguiente fase consistirá en visualizar gráficamente dichos landmarks sobre la imagen y comenzar a diseñar la lógica de detección de caídas.
 
 ## Próximos pasos
 

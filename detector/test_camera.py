@@ -1,6 +1,6 @@
 import cv2
 
-cap = cv2.VideoCapture("http://192.168.1.37:4747/video")
+cap = cv2.VideoCapture("http://192.168.1.42:4747/video")
 
 while True:
     success, frame = cap.read()
