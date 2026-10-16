@@ -62,6 +62,7 @@ while True:
                 (0, 255, 0),
                 -1
             )
+        # Para agregar las lineas de unión entre los landmarkers
         connections = mp.tasks.vision.PoseLandmarksConnections.POSE_LANDMARKS
 
         for connection in connections:
@@ -85,6 +86,7 @@ while True:
                 (255, 0, 0),
                 2
             )
+        # hasta aquí
 
     cv2.imshow("Pose Live", frame)
 
