@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>AIMA Fall Detection</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f5f7fa;
+        }
+
+        h1 {
+            color: #1f2937;
+        }
+
+        .filters {
+            margin-bottom: 20px;
+        }
+
+        select,
+        input,
+        button {
+            padding: 8px 12px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            background-color: #2563eb;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+        }
+
+        th {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .counter {
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+    </style>
+
+</head>
+<body>
+    <div class="card">
+
+        <h1>AIMA Fall Detection</h1>
+
+        <label>Tipo:</label>
+
+        <select id="eventType">
+            <option value="">Todos</option>
+            <option value="fall">fall</option>
+            <option value="notfall">notfall</option>
+        </select>
+
+        <label>Fecha:</label>
+
+        <input type="date" id="eventDate">
+
+        <button onclick="loadFalls()">
+            Actualizar eventos
+        </button>
+
+        <p class="counter" id="eventCounter">
+            Eventos encontrados: 0
+        </p>
+
+        <br><br>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tipo</th>
+                    <th>Fecha</th>
+                    <th>Confianza</th>
+                    <th>Origen</th>
+                </tr>
+            </thead>
+
+            <tbody id="fallsTable">
+            </tbody>
+
+        </table>
+
+        <script>
+
+            async function loadFalls() {
+
+                const response =
+                    await fetch("http://127.0.0.1:8000/falls")
+
+                const data =
+                    await response.json()
+                
+                console.log(data)
+
+                const selectedType =
+                    document.getElementById("eventType").value
+
+                const selectedDate =
+                    document.getElementById("eventDate").value
+
+                const table =
+                    document.getElementById("fallsTable")
+
+                table.innerHTML = ""
+
+                const filteredData = data.filter(event => {
+
+                    const eventType = event[1]
+
+                    const eventDate = event[2].split("T")[0]
+
+                    if (
+                        selectedType &&
+                        eventType !== selectedType
+                    ) {
+                        return false
+                    }
+
+                    if (
+                        selectedDate &&
+                        eventDate !== selectedDate
+                    ) {
+                        return false
+                    }
+
+                    return true
+                })
+
+                document.getElementById("eventCounter").textContent =
+                    `Eventos encontrados: ${filteredData.length}`
+
+                filteredData.forEach(event => {
+                    const formattedDate =
+                        event[2]
+                            .replace("T", " ")
+                            .split(".")[0]
+                    const row = `
+                        <tr>
+                            <td>${event[0]}</td>
+                            <td>${event[1]}</td>
+                            <td>${formattedDate}</td>
+                            <td>${Math.round(event[3] * 100)}%</td>
+                            <td>${event[4]}</td>
+                        </tr>
+                    `
+
+                    table.innerHTML += row
+                })
+            }
+            loadFalls()
+
+        </script>
+    </div>
+</body>
+</html>

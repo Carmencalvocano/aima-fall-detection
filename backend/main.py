@@ -2,9 +2,17 @@ import sqlite3
 from fastapi import FastAPI
 from datetime import datetime
 from pydantic import BaseModel # Para definir modelos de datos
-
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class FallEvent(BaseModel):
     event_type: str

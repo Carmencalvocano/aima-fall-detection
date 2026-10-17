@@ -93,8 +93,10 @@ pip install mediapipe opencv-python fastapi uvicorn
 - [x] Base de datos SQLite
 - [x] Almacenamiento de eventos detectados
 - [x] Análisis de landmarks relevantes (nariz, hombros, caderas y tobillos)
+- [x] Frontend de consulta
+- [x] Filtrado por fecha
+- [x] Filtrado por tipo
 - [ ] Detección de caídas
-- [ ] Frontend de consulta
 
 ---
 
@@ -271,11 +273,37 @@ Actualmente los eventos pueden almacenarse y recuperarse correctamente mediante 
 
 ---
 
+### Frontend de consulta
+
+Se ha desarrollado una interfaz web ligera basada en HTML, CSS y JavaScript para consultar los eventos almacenados por el sistema.
+
+El frontend consume la API REST desarrollada con FastAPI mediante peticiones HTTP y muestra los resultados en formato tabular.
+
+Actualmente permite:
+
+```text
+- Consultar eventos almacenados
+- Filtrar por tipo de evento
+- Filtrar por fecha
+- Visualizar el nivel de confianza
+- Consultar el número de eventos encontrados
+```
+
+La interfaz se comunica directamente con los endpoints:
+
+```text
+GET /falls
+```
+
+para recuperar los eventos registrados en la base de datos SQLite.
+
+Se ha habilitado soporte CORS en FastAPI para permitir la comunicación entre el frontend y el backend durante el desarrollo local.
+
+---
+
 ## Próximos pasos
 
 1. Diseñar la lógica de detección de caídas.
 2. Integrar la detección con el backend mediante peticiones HTTP.
-3. Implementar filtrado de eventos por fecha y tipo.
-4. Desarrollar el frontend para consulta de eventos.
-5. Evaluar sensibilidad y falsos positivos mediante vídeos de prueba.
-6. Preparar la propuesta de despliegue local para tablet (extra).
+3. Evaluar sensibilidad y falsos positivos mediante vídeos de prueba.
+4. Preparar la propuesta de despliegue local para tablet (extra).
