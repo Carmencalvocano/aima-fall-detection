@@ -88,9 +88,11 @@ pip install mediapipe opencv-python fastapi uvicorn
 - [x] Integración MediaPipe Pose
 - [x] Obtención de landmarks corporales
 - [x] Visualización de landmarks en tiempo real
+- [x] Visualización del esqueleto en tiempo real
 - [x] Backend FastAPI
 - [x] Base de datos SQLite
 - [x] Almacenamiento de eventos detectados
+- [x] Análisis de landmarks relevantes (nariz, hombros, caderas y tobillos)
 - [ ] Detección de caídas
 - [ ] Frontend de consulta
 
@@ -184,6 +186,49 @@ La siguiente fase consistirá en analizar los landmarks más relevantes (hombros
 
 ---
 
+### Análisis de landmarks
+
+Se ha realizado una fase de exploración de los landmarks proporcionados por MediaPipe Pose para comprender su funcionamiento y evaluar su utilidad para la detección de caídas.
+
+Durante esta fase se han analizado las propiedades:
+
+```text
+x
+y
+z
+visibility
+presence
+```
+
+Se ha verificado que MediaPipe devuelve 33 landmarks corporales normalizados y que cada uno de ellos dispone de métricas de confianza asociadas.
+
+Para facilitar la experimentación se ha desarrollado una visualización en tiempo real que muestra:
+
+```text
+- Landmarks corporales
+- Esqueleto completo
+- Etiquetas de landmarks relevantes
+```
+
+Los landmarks identificados como más relevantes para la detección de caídas son:
+
+```text
+0  -> Nariz
+
+11 -> Hombro izquierdo
+12 -> Hombro derecho
+
+23 -> Cadera izquierda
+24 -> Cadera derecha
+
+27 -> Tobillo izquierdo
+28 -> Tobillo derecho
+```
+
+Estos puntos serán utilizados en la siguiente fase para diseñar la lógica de detección de caídas.
+
+---
+
 ### Backend y almacenamiento de eventos
 
 Se ha desarrollado un backend utilizando FastAPI para recibir y almacenar eventos detectados por el sistema.
@@ -228,10 +273,9 @@ Actualmente los eventos pueden almacenarse y recuperarse correctamente mediante 
 
 ## Próximos pasos
 
-1. Analizar landmarks relevantes para detectar caídas.
-2. Diseñar la lógica de detección de caídas.
-3. Integrar la detección con el backend mediante peticiones HTTP.
-4. Implementar filtrado de eventos por fecha y tipo.
-5. Desarrollar el frontend para consulta de eventos.
-6. Evaluar sensibilidad y falsos positivos.
-7. Preparar la propuesta de despliegue local para tablet (extra).
+1. Diseñar la lógica de detección de caídas.
+2. Integrar la detección con el backend mediante peticiones HTTP.
+3. Implementar filtrado de eventos por fecha y tipo.
+4. Desarrollar el frontend para consulta de eventos.
+5. Evaluar sensibilidad y falsos positivos mediante vídeos de prueba.
+6. Preparar la propuesta de despliegue local para tablet (extra).
