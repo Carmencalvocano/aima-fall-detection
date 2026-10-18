@@ -58,6 +58,18 @@ aima-fall-detection/
 - FastAPI
 - SQLite
 
+### Justificación tecnológica
+
+#### FastAPI
+
+Se seleccionó FastAPI por su facilidad para crear APIs REST, validación automática mediante Pydantic y documentación Swagger integrada.
+
+#### SQLite
+
+Se seleccionó SQLite por tratarse de un prototipo local con bajo volumen de datos, sin necesidad de infraestructura adicional ni servidor dedicado.
+
+Además, SQLite simplifica la distribución y ejecución del proyecto durante la evaluación técnica.
+
 ---
 
 ## Instalación
@@ -411,8 +423,6 @@ SH = 0.01 - 0.05
 
 Durante una caída:
 
-SV disminuye progresivamente
-
 SH aumenta progresivamente
 
 Estado tumbado:
@@ -513,6 +523,21 @@ Actualmente los eventos pueden almacenarse y recuperarse correctamente mediante 
 
 ---
 
+### Consideraciones de privacidad
+
+El sistema no almacena ni transmite imágenes o vídeo.
+
+Únicamente se registran metadatos del evento:
+
+- timestamp
+- tipo de evento
+- confianza
+- origen
+
+Este enfoque reduce el tratamiento de datos personales y se alinea con los requisitos de privacidad esperables en un entorno de monitorización de personas mayores.
+
+---
+
 ### Frontend de consulta
 
 Se ha desarrollado una interfaz web ligera basada en HTML, CSS y JavaScript para consultar los eventos almacenados por el sistema.
@@ -563,7 +588,20 @@ El sistema fue validado utilizando dos enfoques complementarios:
 
 Se utilizaron vídeos procedentes del UR Fall Detection Dataset para analizar distintos tipos de caída y evaluar el comportamiento de las métricas implementadas.
 
-Las pruebas permitieron ajustar los umbrales de detección y comparar diferentes estrategias basadas en landmarks corporales.
+En cada uno de los seis vídeos evaluados había exactamente una caída esperada. El detector produjo los siguientes resultados:
+
+| Vídeo | Caídas esperadas | Caídas detectadas | Resultado |
+|---|---:|---:|---|
+| `fall-01-cam0.mp4` | 1 | 1 | Detectada |
+| `fall-02-cam0.mp4` | 1 | 1 | Detectada |
+| `fall-03-cam0.mp4` | 1 | 0 | No detectada |
+| `fall-06-cam0.mp4` | 1 | 1 | Detectada |
+| `fall-09-cam0.mp4` | 1 | 0 | No detectada |
+| `fall-17-cam0.mp4` | 1 | 0 | No detectada |
+
+El detector identificó **3 de las 6 caídas esperadas**, por lo que la sensibilidad (recall) observada en este conjunto de prueba fue del **50 % (3/6)**.
+
+Las pruebas también permitieron ajustar los umbrales de detección y comparar diferentes estrategias basadas en landmarks corporales.
 
 #### Pruebas en tiempo real
 
