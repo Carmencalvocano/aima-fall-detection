@@ -28,12 +28,23 @@ Frontend de consulta
 
 ```text
 aima-fall-detection/
-│
 ├── backend/
+│   ├── database.py
+│   └── main.py
 ├── detector/
+│   ├── models/
+│   │   └── pose_landmarker_full.task
+│   ├── tests/
+│   ├── videos/
+│   │   └── fall-*.mp4
+│   ├── fall_detector.py
+│   ├── test_all_videos.py
+│   ├── pose_live.py
+│   └── pose_videos.py
 ├── frontend/
-├── videos/
-├── docs/
+│   └── index.html
+├── requirements.txt
+├── falls.db (generado automáticamente)
 └── README.md
 ```
 
@@ -72,8 +83,105 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ### Instalar dependencias
 
 ```bash
-pip install mediapipe opencv-python fastapi uvicorn
+pip install -r requirements.txt
 ```
+
+---
+
+## Ejecución del prototipo
+
+### 1. Crear la base de datos
+
+Antes de arrancar el sistema es necesario crear la base de datos SQLite:
+
+```bash
+python backend/database.py
+```
+
+Esto generará el fichero:
+
+```text
+falls.db
+```
+
+y creará las tablas necesarias para almacenar los eventos detectados.
+
+---
+
+### 2. Iniciar el backend
+
+Desde la raíz del proyecto:
+
+```bash
+uvicorn backend.main:app --reload
+```
+
+El backend quedará disponible en:
+
+```text
+http://127.0.0.1:8000
+```
+
+La documentación Swagger puede consultarse en:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
+### 3. Iniciar el frontend
+
+Abrir el archivo:
+
+```text
+frontend/index.html
+```
+
+desde el navegador.
+
+El frontend consultará automáticamente los eventos almacenados en la base de datos a través del backend.
+
+---
+
+### 4. Ejecutar el detector de caídas
+
+En una nueva terminal:
+
+```bash
+python detector/fall_detector.py
+```
+
+El detector procesará la entrada de vídeo y analizará la pose corporal mediante MediaPipe Pose.
+
+Cuando se detecte una caída:
+
+```text
+FALL DETECTED
+```
+
+se generará automáticamente un evento que será enviado al backend y almacenado en SQLite.
+
+---
+
+### 5. Verificar los resultados
+
+Los eventos detectados pueden verificarse:
+
+#### Desde Swagger
+
+```text
+GET /falls
+```
+
+#### Desde el frontend
+
+Accediendo a la tabla de eventos, donde se muestran:
+
+- Tipo de evento
+- Fecha y hora
+- Nivel de confianza
+- Fuente de detección
 
 ---
 
@@ -92,7 +200,6 @@ pip install mediapipe opencv-python fastapi uvicorn
 - [x] Backend FastAPI
 - [x] Base de datos SQLite
 - [x] Almacenamiento de eventos detectados
-- [x] Análisis de landmarks relevantes (nariz, hombros, caderas y tobillos)
 - [x] Frontend de consulta
 - [x] Filtrado por fecha
 - [x] Filtrado por tipo
@@ -101,7 +208,13 @@ pip install mediapipe opencv-python fastapi uvicorn
 - [x] Evaluación de métricas Nariz-Caderas
 - [x] Evaluación de métricas Hombros-Caderas
 - [x] Comparativa de estrategias para detección de caídas
-- [ ] Detección de caídas
+- [x] Detección de caídas mediante MediaPipe Pose
+- [x] Integración detector → FastAPI
+- [x] Almacenamiento automático de eventos detectados
+- [x] Cálculo dinámico de confianza
+- [x] Validación mediante vídeos del UR Fall Detection Dataset
+- [x] Validación mediante cámara en tiempo real
+- [x] Prevención de eventos duplicados
 
 ---
 
@@ -189,7 +302,7 @@ Actualmente se ha verificado la detección de una persona mediante una imagen ca
 
 La detección de landmarks se ha integrado correctamente sobre vídeo en tiempo real. Actualmente se visualizan tanto los landmarks individuales como el esqueleto corporal completo generado por MediaPipe Pose.
 
-La siguiente fase consistirá en analizar los landmarks más relevantes (hombros, caderas, tobillos y nariz) para diseñar e implementar la lógica de detección de caídas.
+Posteriormente se analizaron los landmarks más relevantes (hombros, caderas, tobillos y nariz) para diseñar e implementar la lógica de detección de caídas.
 
 ---
 
@@ -310,6 +423,54 @@ SH = 0.10 - 0.16
 
 ---
 
+### Estrategia seleccionada
+
+Tras el análisis experimental de diferentes métricas se seleccionó la estrategia basada en los puntos medios de hombros y caderas.
+
+La caída se considera detectada cuando se cumplen estas condiciones durante **5 frames consecutivos**:
+
+```text
+SV < 0.05
+SH > 0.10
+```
+
+Donde:
+
+- **SV** es la distancia vertical entre los puntos medios de los hombros y las caderas.
+- **SH** es la distancia horizontal entre los puntos medios de los hombros y las caderas.
+
+Esta aproximación mostró mejores resultados que la estrategia basada en nariz-caderas. Permitió detectar correctamente múltiples caídas tanto en los vídeos del dataset como en pruebas en tiempo real mediante cámara.
+
+Para reducir eventos duplicados, el detector incorpora un mecanismo de recuperación: la persona debe volver a una postura estable antes de que se permita registrar una nueva caída.
+
+---
+
+### Detección e integración de eventos
+
+Cuando se detecta una caída, el detector genera automáticamente un evento y lo envía al backend mediante una petición HTTP.
+
+Ejemplo de evento generado:
+
+```json
+{
+  "event_type": "fall",
+  "confidence": 0.94,
+  "source": "mediapipe"
+}
+```
+
+La confianza se calcula dinámicamente a partir de los valores observados para las distancias vertical y horizontal utilizadas por la regla de detección.
+
+Los eventos se envían automáticamente al endpoint:
+
+```text
+POST /falls
+```
+
+Luego quedan almacenados en SQLite para su posterior consulta desde la interfaz web.
+
+---
+
 ### Backend y almacenamiento de eventos
 
 Se ha desarrollado un backend utilizando FastAPI para recibir y almacenar eventos detectados por el sistema.
@@ -380,9 +541,62 @@ Se ha habilitado soporte CORS en FastAPI para permitir la comunicación entre el
 
 ---
 
+### Resultados obtenidos
+
+Se realizaron pruebas utilizando vídeos del **UR Fall Detection Dataset** y pruebas en tiempo real mediante cámara.
+
+Resultados observados:
+
+- Detección correcta de caídas frontales.
+- Detección correcta de caídas laterales.
+- Registro automático de eventos en SQLite.
+- Visualización correcta de eventos en el frontend.
+- Detección y registro de múltiples caídas consecutivas cuando la persona recupera previamente una postura estable.
+
+---
+
+### Validación realizada
+
+El sistema fue validado utilizando dos enfoques complementarios:
+
+#### Vídeos de prueba
+
+Se utilizaron vídeos procedentes del UR Fall Detection Dataset para analizar distintos tipos de caída y evaluar el comportamiento de las métricas implementadas.
+
+Las pruebas permitieron ajustar los umbrales de detección y comparar diferentes estrategias basadas en landmarks corporales.
+
+#### Pruebas en tiempo real
+
+Además de los vídeos del dataset, se realizaron pruebas reales utilizando una cámara conectada al sistema.
+
+Durante estas pruebas se verificó:
+
+- Detección automática de caídas.
+- Registro de eventos en SQLite.
+- Envío automático de eventos al backend.
+- Visualización de eventos en el frontend.
+- Registro independiente de múltiples caídas consecutivas tras la recuperación de la persona.
+
+---
+
+### Limitaciones identificadas
+
+Durante las pruebas realizadas se identificaron algunas limitaciones de la heurística implementada:
+
+- Las caídas de espaldas pueden no producir suficiente desplazamiento horizontal entre hombros y caderas.
+- Las caídas en las que la persona termina en una postura encogida o semisentada pueden presentar valores similares a una postura sentada, dificultando su detección mediante la métrica hombros-caderas.
+- Algunas caídas muy rápidas pueden no cumplir la condición durante suficientes frames consecutivos.
+- Los umbrales utilizados fueron obtenidos experimentalmente a partir de un conjunto reducido de vídeos.
+- El sistema trabaja con una única cámara RGB y no dispone de información de profundidad real.
+
+Estas limitaciones sugieren que futuras versiones deberían incorporar características adicionales además de la geometría hombros-caderas.
+
+---
+
 ## Próximos pasos
 
-1. Diseñar la lógica de detección de caídas.
-2. Integrar la detección con el backend mediante peticiones HTTP.
-3. Evaluar sensibilidad y falsos positivos mediante vídeos de prueba.
-4. Preparar la propuesta de despliegue local para tablet (extra).
+- Mejorar la detección de caídas de espaldas.
+- Incorporar nuevas métricas basadas en velocidad y aceleración de landmarks.
+- Evaluar el sistema sobre un conjunto de datos más amplio.
+- Reducir falsos negativos en caídas rápidas.
+- Preparar una propuesta de despliegue sobre tablet Android.
