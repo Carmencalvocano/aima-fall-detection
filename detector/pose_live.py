@@ -23,7 +23,8 @@ landmarker = PoseLandmarker.create_from_options(options)
 # Cámara
 # -----------------------------
 
-cap = cv2.VideoCapture("http://192.168.1.42:4747/video")
+# cap = cv2.VideoCapture("http://192.168.1.42:4747/video")
+cap = cv2.VideoCapture(0)
 
 while True:
 

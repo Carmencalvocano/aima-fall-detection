@@ -96,6 +96,11 @@ pip install mediapipe opencv-python fastapi uvicorn
 - [x] Frontend de consulta
 - [x] Filtrado por fecha
 - [x] Filtrado por tipo
+- [x] Análisis de landmarks relevantes (nariz, hombros, caderas y tobillos)
+- [x] Implementación de pruebas sobre vídeo mediante MediaPipe Pose
+- [x] Evaluación de métricas Nariz-Caderas
+- [x] Evaluación de métricas Hombros-Caderas
+- [x] Comparativa de estrategias para detección de caídas
 - [ ] Detección de caídas
 
 ---
@@ -228,6 +233,80 @@ Los landmarks identificados como más relevantes para la detección de caídas s
 ```
 
 Estos puntos serán utilizados en la siguiente fase para diseñar la lógica de detección de caídas.
+
+---
+
+### Experimentos de detección de caídas
+
+Se ha realizado una fase experimental utilizando vídeos del dataset UR Fall Detection Dataset con el objetivo de identificar métricas capaces de discriminar correctamente una caída frente a otros estados corporales.
+
+Para ello se desarrollaron distintas herramientas de visualización que permiten reproducir vídeos, mostrar el esqueleto generado por MediaPipe Pose y analizar la evolución de determinados landmarks a lo largo del tiempo.
+
+Se evaluaron dos aproximaciones principales:
+
+#### Estrategia 1: Nariz - Caderas
+
+Se calculó la posición media de las caderas y se comparó con la posición de la nariz.
+
+A partir de estos puntos se obtuvieron:
+
+- Distancia vertical
+- Distancia horizontal
+
+Los experimentos mostraron que:
+
+- La distancia vertical disminuye significativamente durante una caída.
+- La distancia horizontal aumenta cuando la persona termina tumbada.
+- Los resultados son satisfactorios en vistas frontales y laterales.
+
+Sin embargo, cuando la persona cae de espaldas a la cámara la nariz deja de ser un landmark suficientemente estable, reduciendo la robustez de esta estrategia.
+
+#### Estrategia 2: Hombros - Caderas
+
+Posteriormente se sustituyó la nariz por el punto medio de ambos hombros.
+
+Se calcularon igualmente:
+
+- Distancia vertical entre hombros y caderas
+- Distancia horizontal entre hombros y caderas
+
+Los resultados obtenidos muestran un comportamiento más consistente para diferentes orientaciones corporales:
+
+- Vista frontal
+- Vista lateral
+- Vista posterior
+
+Por este motivo la aproximación basada en hombros y caderas se considera actualmente la candidata principal para la implementación final del detector de caídas.
+
+---
+
+### Patrones observados
+
+Durante las pruebas realizadas se observaron los siguientes comportamientos:
+
+Estado de pie:
+
+SV = 0.15 - 0.35
+
+SH = 0.00 - 0.03
+
+Estado sentado:
+
+SV = 0.20 - 0.25
+
+SH = 0.01 - 0.05
+
+Durante una caída:
+
+SV disminuye progresivamente
+
+SH aumenta progresivamente
+
+Estado tumbado:
+
+SV = 0.00 - 0.05
+
+SH = 0.10 - 0.16
 
 ---
 
